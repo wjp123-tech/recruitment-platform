@@ -1,0 +1,101 @@
+spring:
+  application:
+    name: recruitment-platform
+  datasource:
+    url: jdbc:postgresql://localhost:5432/recruitment
+    username: postgres
+    password: 123456
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  ai:
+    openai:
+      api-key: ${DASHSCOPE_API_KEY}
+      base-url: https://dashscope.aliyuncs.com/compatible-mode
+      embedding:
+        options:
+          model: text-embedding-v3
+          dimensions: 1024
+      chat:
+        options:
+          model: qwen-plus
+    vectorstore:
+      pgvector:
+        initialize-schema: true
+        index-type: HNSW
+        distance-type: COSINE_DISTANCE
+        dimensions: 1024
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+server:
+  port: 8080
+
+app:
+  ai:
+    default-provider: dashscope
+    embedding-dimensions: 1024
+    advisors:
+      enabled: true
+      safeguard-enabled: true
+      safeguard-words:
+        - "忽略以上指令"
+        - "ignore previous instructions"
+        - "you are now"
+      message-chat-memory-enabled: true
+      message-chat-memory-max-messages: 20
+      simple-logger-enabled: false
+    providers:
+      dashscope:
+        base-url: https://dashscope.aliyuncs.com/compatible-mode
+        api-key: ${DASHSCOPE_API_KEY}
+        model: qwen-plus
+        embedding-model: text-embedding-v3
+        supports-embedding: true
+      deepseek:
+        base-url: https://api.deepseek.com
+        api-key: ${DEEPSEEK_API_KEY:}
+        model: deepseek-chat
+        supports-embedding: false
+      kimi:
+        base-url: https://api.moonshot.cn/v1
+        api-key: ${KIMI_API_KEY:}
+        model: moonshot-v1-8k
+        supports-embedding: false
+      glm:
+        base-url: https://open.bigmodel.cn/api/paas/v4
+        api-key: ${GLM_API_KEY:}
+        model: glm-4
+        supports-embedding: false
+    rag:
+      rewrite:
+        enabled: true
+      search:
+        short-query-length: 4
+        topk-short: 20
+        topk-medium: 12
+        topk-long: 8
+        min-score-short: 0.25
+        min-score-default: 0.28
+    interview:
+      follow-up-count: 1
+      max-rounds: 10
+      evaluation-batch-size: 8
+
+  jwt:
+    secret: ${JWT_SECRET:recruitment-platform-secret-key-2024}
+    expiration: 86400000
+
+  storage:
+    upload-dir: ${UPLOAD_DIR:./uploads}
+
+logging:
+  level:
+    com.recruitment: DEBUG
+    org.springframework.ai: DEBUG
